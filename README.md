@@ -118,7 +118,7 @@ RUN ln -s /etc/mecabrc /usr/local/etc/mecabrc
 
 mecabコマンドの`mecabrc`のパスが`/etc/mecabrc`だが、`mecab-python3`は`/usr/local/etc/mecabrc`にあってほしいと望んているため、シンボリックリンクを張る。
 
-シンボリックリンクを張らずにpythonで書いてみると次のようにエラーが出る。
+シンボリックリンクを張らないDockerfileで作ったイメージ内でpythonで書いてみると次のようにエラーが出る。
 
 ```
 docker $ python3
@@ -175,7 +175,7 @@ docker $ ls -al /usr/local/etc
 lrwxrwxrwx  1 root root   12 Nov 26 08:51 mecabrc -> /etc/mecabrc
 ```
 
-もういちどpythonでプログラムを書いてみる
+もういちどpythonでプログラムを書いてみる。
 
 ```
 (venv) wsl $ python3
@@ -191,7 +191,8 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
-良さそう。
+これで動くことが確認できたので、Dockerfileにも同じ処理を入れてある。
+
 
 ## jupyterlabを起動する
 
@@ -216,16 +217,22 @@ wsl $ ./start.bash
 wsl $ docker run --name jupyter-mecab-container --rm --detach --publish 8889:8888 --mount type=bind,src=$PWD,dst=/jupyter jupyter-mecab
 ```
 
-でコンテナ生成して、バックグラウンドで起動。
+でコンテナ生成。
 
-コンテナ内のport8888と、コンテナ外のport8889を接続する。
+--name docker ps で見えるコンテナ名を`jupyter-mecab-container`にする
 
-コンテナ内の`/jupyter`ディレクトリと、コンテナ外の現在のディレクトリを紐づける。
+--rm コンテナ終了したら自動で削除する。
 
-コンテナ終了したら自動で削除する。
+--detach バックグラウンドで起動。
+
+--publish コンテナ内のport8888と、コンテナ外のport8889を接続する。
+
+--mount コンテナ内の`/jupyter`ディレクトリと、コンテナ外の現在のディレクトリを紐づける。
+
+jupyter-mecab イメージ`jupyter-mecab`からコンテナを作る
 
 
-# Windowsからlupyterlabへ
+# Windowsからdocker内のlupyterlabへ接続
 
 Windowsのブラウザから、( http://localhost:8889/ )へ接続すると、jupyterlabの画面になる。
 jupyterlab上の`/jupyter`ディレクトリと`wsl`上のコンテナ生成したディレクトリとで、ファイルのやり取りができる。
