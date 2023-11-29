@@ -170,11 +170,28 @@ docker $ find / -name mecabrc -print
 なので、シンボリックリンクを張る。
 
 ```
-docker $ ln -s /etc/mecabrc /usr/local/etc/mecabrc
+docker $ sudo ln -s /etc/mecabrc /usr/local/etc/mecabrc
 docker $ ls -al /usr/local/etc
 lrwxrwxrwx  1 root root   12 Nov 26 08:51 mecabrc -> /etc/mecabrc
 ```
 
+もういちどpythonでプログラムを書いてみる
+
+```
+(venv) wsl $ python3
+Python 3.11.2 (main, Mar 13 2023, 12:18:29) [GCC 12.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import MeCab
+>>> wakati = MeCab.Tagger("-Owakati")
+>>> text = "すもももももももものうち"
+>>> result = wakati.parse(text)
+>>> print(result)
+すもも も もも も もも の うち
+
+>>>
+```
+
+良さそう。
 
 ## jupyterlabを起動する
 
@@ -247,32 +264,85 @@ openSUSE-Tumbleweed                    openSUSE Tumbleweed
 
 ```
 PS $ wsl --install Ddebian
-　;
-  ;
-username :
-password :
+インストール中: Debian GNU/Linux
+Debian GNU/Linux がインストールされました。
+Debian GNU/Linux を起動しています...
+Installing, this may take a few minutes...
+Please create a default UNIX user account. The username does not need to match your Windows username.
+For more information visit: https://aka.ms/wslusers
+Enter new UNIX username: xxxxx
+New password:
+Retype new password:
+passwd: password updated successfully
+Installation successful!
+xxxxx@yyyyy:~$ ←以降 ** wsl $ ** と表記
 ```
 
 今回は新たな環境として`Debian`をインストールしたので、この中で以下のようにインストールを進める。
-`venv`は`python`のバージョンと合わせる。
+
+mecabコマンドをインストールする。
 
 ```
-wsl $ sudo apt update
-wsl $ sudo apt install python3-pip
-
-wsl $ python -V
-Python 3.11.2
-
-wsl $ sudo apt install python3.11-venv
 wsl $ sudo apt install mecab libmecab-dev mecab-ipadic-utf8
 ```
 
-本件用のpython環境を作らなければpipインストールできないため、先ほどインストールしたvenvで本件専用環境を準備する。
-本件環境は`jupyterlab`というディレクトリ内に作ることにする。
+pythonが入っていないことを確認。
+
+```
+wsl $ python -V
+-bash: python: command not found
+wsl $ python3 -V
+-bash: python3: command not found
+```
+
+pythonをインストールする。
+
+```
+wsl $ sudo apt update
+  ;
+wsl $ sudo apt install python3-pip
+  ;
+```
+
+インストールしたpython3のバージョンを確認する
+
+```
+wsl $ python3 -V
+Python 3.11.2
+```
+
+今回のjupyterlab環境専用にpythonの追加パッケージを準備したいため`venv`を使いたい。
+`apt install python3-pip`だけだと以下のようになるので、追加で`venv`をインストールする必要がある。
+本件環境は`~/jupyterlab`というディレクトリ内に作ることにする。
 
 ```
 wsl $ mkdir jupyterlab
 wsl $ cd jupyterlab
+wsl $ python3 -m venv venv
+The virtual environment was not created successfully because ensurepip is not
+available.  On Debian/Ubuntu systems, you need to install the python3-venv
+package using the following command.
+
+    apt install python3.11-venv
+
+You may need to use sudo with that command.  After installing the python3-venv
+package, recreate your virtual environment.
+
+Failing command: /home/xxxxx/jupyterlab/venv/bin/python3
+```
+
+venvは`python`のバージョンと合わせる。今回、3.11だったので、`python3.11-venv`を指定する。
+
+```
+wsl $ sudo apt install python3.11-venv
+```
+
+本件用のpython環境を作らなければpipインストールできないため、先ほどインストールしたvenvで本件専用環境を準備する。
+先ほど試した通り、本件環境は`~/jupyterlab`というディレクトリ内に作ることにする。
+
+```
+wsl $ mkdir jupyterlab （済）
+wsl $ cd jupyterlab （済）
 wsl $ python3 -m venv venv
 wsl $ source venv/bin/activate
 (venv) wsl $
@@ -283,6 +353,26 @@ wsl $ source venv/bin/activate
 ```
 (venv) wsl $ pip3 install jupyterlab pandas mecab-python3
 ```
+
+もし、次のような警告が出た場合はproxyを指定してやってみる
+
+```
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:992)'))': /simple/jupyterlab/
+```
+
+proxyを指定してもういちど。アドレスとポートは自分の環境に合わせて。
+
+```
+(venv) wsl $ pip3 --proxy=aaa.bbb.ccc.ddd:eeee install jupyterlab pandas mecab-python3
+```
+
+dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのファイルパスの不整合があるので、解消しておく。
+
+```
+(venv) wsl $ ln -s /etc/mecabrc /usr/local/etc/mecabrc
+```
+
+これでpythonでmecabが利用できるようになった。
 
 `jupyterlab`を起動する。
 
@@ -327,7 +417,7 @@ wsl $ source venv/bin/activate
 起動して固まるのでEnterキーを押すと、コマンドプロンプトが戻ってくる。
 （＆を付けないとコマンドプロンプトにならないが、以後はコマンドプロンプトは使わずブラウザからの操作のため、＆を付けても付けなくても良い）
 
-この画面を放置して、末尾付近にある
+この画面の末尾付近にある
 
 ```
     Or copy and paste one of these URLs:
