@@ -260,7 +260,7 @@ SUSE-Linux-Enterprise-15-SP5           SUSE Linux Enterprise 15 SP5
 openSUSE-Tumbleweed                    openSUSE Tumbleweed
 ```
 
-メイン環境とおなじものはインストールできないと思うので、そうじゃないものを入れる。
+メイン環境と同じものはインストールできないと思うので、そうじゃないものを入れる。
 
 ```
 PS $ wsl --install Ddebian
