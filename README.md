@@ -186,7 +186,7 @@ lrwxrwxrwx  1 root root   12 Nov 26 08:51 mecabrc -> /etc/mecabrc
 もういちどpythonでプログラムを書いてみる。
 
 ```
-(venv) wsl $ python3
+docker $ python3
 Python 3.11.2 (main, Mar 13 2023, 12:18:29) [GCC 12.2.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import MeCab
