@@ -442,6 +442,73 @@ dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのフ
 に書いてあるアドレスをWindowsのブラウザに指定すると、jupyterlabにアクセスできる。
 
 
+## word cloudに日本語を表示する場合
+
+日本語をワードクラウドにすると、豆腐（□）が表示されて話にならない。
+
+```
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+%matplotlib inline
+wc = WordCloud()
+wc.generate("あ い う え お あ あ あ い え")
+```
+
+そこで、Windows内の日本語フォントを指定すると、、、
+
+```
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+%matplotlib inline
+font_path = "/mnt/C/Windows/Fonts/meiryo.ttc"
+wc = WordCloud(font_path=font_path)
+wc.generate("あ い う え お あ あ あ い え")
+```
+
+とすると、わかりづらいエラーメッセージとともに、フォント取得に失敗してエラーになる。
+
+```
+File ~/jupyterlab/venv/lib/python3.11/site-packages/PIL/ImageFont.py:797, in truetype(font, size, index, encoding, layout_engine)
+    794     return FreeTypeFont(font, size, index, encoding, layout_engine)
+    796 try:
+--> 797     return freetype(font)
+    798 except OSError:
+    799     if not is_path(font):
+```
+
+jupyterlabを起動するディレクトリより上に遡って探索できないようだ。
+そこで、jupyterlabを起動するディレクトリに日本語フォントを置くことで解決できる。
+
+```
+wsl $ cd jupyterlab
+wsl $ mkdir font
+wsl $ cd font
+wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+wsl $ unzip HackGen_v2.9.0.zip
+wsl $ ls
+HackGen_v2.9.0
+wsl $ ls HackGen_v2.9.0
+HackGen-Bold.ttf
+HackGen-Regular.ttf
+  ;
+  ;
+wsl $ cd ..
+wsl $ source venv/bin/activete
+(venv) wsl $ jupyter lab &
+```
+
+jupyterlabに次のように書くと、動く。
+
+```
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+%matplotlib inline
+font_path = "font/HackGen_v2.9.0/HackGen-Regular.ttf"
+wc = WordCloud(font_path=font_path)
+wc.generate("あ い う え お あ あ あ い え")
+```
+
+
 # (参考) wsl piplist
 
 ```
