@@ -445,6 +445,7 @@ dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのフ
 ## word cloudに日本語を表示する場合
 
 日本語をワードクラウドにすると、豆腐（□）が表示されて話にならない。
+たとえば以下のように書くと、表示される画像は□だらけになる。
 
 ```
 from wordcloud import WordCloud
