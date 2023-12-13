@@ -454,7 +454,7 @@ wc = WordCloud()
 wc.generate("あ い う え お あ あ あ い え")
 ```
 
-そこで、Windows内の日本語フォントを指定すると、、、
+そこで、以下のようにWindows内の日本語フォントを指定すると、、、
 
 ```
 from wordcloud import WordCloud
@@ -465,7 +465,7 @@ wc = WordCloud(font_path=font_path)
 wc.generate("あ い う え お あ あ あ い え")
 ```
 
-とすると、わかりづらいエラーメッセージとともに、フォント取得に失敗してエラーになる。
+以下のようなわかりづらい大量のエラーメッセージとともに、フォント取得に失敗してエラーになる。
 
 ```
 File ~/jupyterlab/venv/lib/python3.11/site-packages/PIL/ImageFont.py:797, in truetype(font, size, index, encoding, layout_engine)
@@ -477,27 +477,62 @@ File ~/jupyterlab/venv/lib/python3.11/site-packages/PIL/ImageFont.py:797, in tru
 ```
 
 jupyterlabを起動するディレクトリより上に遡って探索できないようだ。
-そこで、jupyterlabを起動するディレクトリに日本語フォントを置くことで解決できる。
+そこで、jupyterlabを起動するディレクトリ以下に日本語フォントを置くことで解決できる。
+たとえば ` 白源 (はくげん) フォント ( https://github.com/yuru7/HackGen/ ) ` を用いて、以下のように配置する。
 
 ```
-wsl $ cd jupyterlab
+jupyterlab/
+  + font/
+     + HackGen_vXXXX.zip
+     + HackGen_vXXXX/
+         + HackGen-Bold.ttf
+         + HackGen-Regular.ttf
+         +    ;
+```
+
+wsl上で操作する場合は jupyterlab ディレクトリ内で以下のようにする。
+
+```
+# fontディレクトリを作る
 wsl $ mkdir font
+# fontディレクトリに移動する
 wsl $ cd font
+# フォントをダウンロードするためにcurl をインストールする
+wsl $ sudo apt install curl
+# curlでhttpsアクセスするときSSLが邪魔することがあるので -k オプションで無視する（良くない）
+# リンクの先であちこちにたらい回しされることがあるので -L オプションで最後まで辿って取得する
 wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+# zip ファイルを解凍する必要があるので解凍コマンドをインストールする
+wsl $ sudo apt install unzip
+# 解凍する
 wsl $ unzip HackGen_v2.9.0.zip
+# 解凍結果をみてみる
 wsl $ ls
 HackGen_v2.9.0
+# 解答結果のディレクトリの中身を見てみる
 wsl $ ls HackGen_v2.9.0
 HackGen-Bold.ttf
 HackGen-Regular.ttf
   ;
   ;
+# fontディレクトリの上にもどる
 wsl $ cd ..
+# venv環境にする
 wsl $ source venv/bin/activete
+# jupyterlabをバックグラウンドで起動する
 (venv) wsl $ jupyter lab &
 ```
 
-jupyterlabに次のように書くと、動く。
+または、Windows上でマウス操作で次のようにすることもできる。
+
+1. フォントをダウンロード ( https://github.com/yuru7/HackGen/ ) して解凍する
+2. Win+R で`ファイル名を指定して実行`の画面を開き、`\\wsl$\Debian\home\Debianをインストールした時に設定した名前\jupyterlab` と入力しOKを押して、jupyterlabのディレクトリを開く（\\wsl$　とだけ入力してディレクトリを開いて、あとはマウス操作で辿っても良い )
+3. jupyterlab ディレクトリの中に font ディレクトリを作成
+4. font ディレクトリの中に HackGen_vXXXX ディレクトリを作成
+5. HackGen_vXXX ディレクトリの中に、解凍した HackGen-Regular.ttf を置く
+6. wsl上で、 `wsl $ source venv/bin/activate` してから `(venv) wsl $ jupyter lab &` でjupyterlabを起動する
+
+wsl上、またはwindows上で、上記の操作をしてフォントを入れたら、jupyterlab上で次のように書くと、動く。
 
 ```
 from wordcloud import WordCloud
