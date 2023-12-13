@@ -455,6 +455,8 @@ import matplotlib.pyplot as plt
 %matplotlib inline
 wc = WordCloud()
 wc.generate("あ い う え お あ あ あ い え")
+plt.imshow(wc)
+wc.to_file("wordcloud.png")
 ```
 
 そこで、以下のようにWindows内の日本語フォントを指定すると、、、
@@ -466,6 +468,8 @@ import matplotlib.pyplot as plt
 font_path = "/mnt/C/Windows/Fonts/meiryo.ttc"
 wc = WordCloud(font_path=font_path)
 wc.generate("あ い う え お あ あ あ い え")
+plt.imshow(wc)
+wc.to_file("wordcloud.png")
 ```
 
 以下のようなわかりづらい大量のエラーメッセージとともに、フォント取得に失敗してエラーになる。
@@ -544,6 +548,8 @@ import matplotlib.pyplot as plt
 font_path = "font/HackGen_v2.9.0/HackGen-Regular.ttf"
 wc = WordCloud(font_path=font_path)
 wc.generate("あ い う え お あ あ あ い え")
+plt.imshow(wc)
+wc.to_file("wordcloud.png")
 ```
 
 
