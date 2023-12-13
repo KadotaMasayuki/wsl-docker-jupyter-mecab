@@ -67,7 +67,9 @@ ENV TZ=Asia/Tokyo
 RUN apt update && apt -y install .....
 ```
 
-Dockerfileは行単位で変更の有無を確認されるらしく( https://scrapbox.io/ima1zumi/RUN_apt-get_update_%E3%81%A8_apt-get_install_%E3%81%AF%E3%80%81%E5%90%8C%E4%B8%80%E3%81%AE_RUN_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E5%86%85%E3%81%AB%E3%81%A6%E5%90%8C%E6%99%82%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B )、`apt install`の行が更新されても`apt update`の行が更新されない限りは`apt update`されないまま`apt install`されてしまう。
+`docker build`コマンドはDockerfile内の変更があった行を処理し、変更が無かった行の操作はキャッシュを使用するらしい( https://scrapbox.io/ima1zumi/RUN_apt-get_update_%E3%81%A8_apt-get_install_%E3%81%AF%E3%80%81%E5%90%8C%E4%B8%80%E3%81%AE_RUN_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E5%86%85%E3%81%AB%E3%81%A6%E5%90%8C%E6%99%82%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B )。
+そのため、`apt install`の行が更新されても`apt update`の行が更新されない限りは`apt update`されないまま古いパッケージが`apt install`されてしまう。
+
 
 ### RUN apt update && apt install の動作例
 
