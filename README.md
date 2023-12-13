@@ -533,7 +533,7 @@ wsl $ source venv/bin/activete
 5. HackGen_vXXX ディレクトリの中に、解凍した HackGen-Regular.ttf を置く
 6. wsl上で、jupyterlabディレクトリ内で、 `wsl $ source venv/bin/activate` してから `(venv) wsl $ jupyter lab &` でjupyterlabを起動する
 
-wsl上、またはwindows上で、上記の操作をしてフォントを入れたら、jupyterlab上で次のように書くと、動く。
+wsl上、またはwindows上で、上記の操作をしてフォントを入れてjupyterlabを起動したら、jupyterlab上で次のように書くと、動く。
 
 ```
 from wordcloud import WordCloud
