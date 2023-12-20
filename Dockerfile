@@ -6,19 +6,28 @@ ENV TZ=Asia/Tokyo
 
 # apt install
 RUN apt update && \
-  apt -y install python3-pip python3.11-venv mecab libmecab-dev mecab-ipadic-utf8
+  apt -y install mecab libmecab-dev mecab-ipadic-utf8
+
+# apt clear
+RUN apt autoremove -y
 
 # pip install
 RUN pip3 install --upgrade pip
 RUN pip3 install jupyterlab
 RUN pip3 install pandas
 RUN pip3 install mecab-python3
-
-# apt clear
-RUN apt autoremove -y
+RUN pip3 install wordcloud
 
 # add link /etc/mecabrc to mecab-python3 target as /usr/local/etc/mecabrc
 RUN ln -s /etc/mecabrc /usr/local/etc/mecabrc
+
+# add japanese font
+RUN mkdir /home/jupyter
+RUN cd /home/jupyter
+RUN apt install curl unzip
+RUN curl -k -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+RUN unzip HackGen_v2.9.0.zip
+RUN mv HackGen_v2.9.0 /usr/local/share/fonts/HackGen
 
 # run jupyter-lab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--LabApp.token=''", "--port=8888"]
