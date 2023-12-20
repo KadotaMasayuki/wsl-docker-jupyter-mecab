@@ -1,6 +1,6 @@
 # wsl-docker-jupyter-mecab
 
-Windows11 > WSL2 > Ubuntu > Docker という構成で`jupyterlab`を作成。
+Windows11 > WSL2 > Ubuntu > Docker という構成で`jupyterlab`を環境を作成。
 Windows上のブラウザから http//localhost:8889/ へアクセスすると`jupyterlab`を利用できる。
 python3.11とmecabを使えるようにしてある。
 
