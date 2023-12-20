@@ -1,7 +1,12 @@
 # dockerがどうしてもインストールできない場合は、wslをコンテナ扱いして運用してみる。
 
-Windows > Wsl > Jupyter という構成とする。
 
+# wsl-jupyter (no docker)
+
+Windows11 > WSL2 > Debian > Jupyterlab という構成でjupyterlab環境を作成。 Windows上のブラウザから http//localhost:8888/ へアクセスするとwsl->jupyterlab:8888へ接続しJupyterlabを利用できる。 python3.11とmecabとwordcloudを使えるようにしてある。
+
+
+# wslにLinuxディストリビューションをインストール
 
 `PowerShell`から、wslにディストリビューションを入れる。
 
