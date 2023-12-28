@@ -24,12 +24,12 @@ wsl中に以下のような構成を想定。
     + ソースコード１
     + ソースコード２
         ;
-    + font/
-       + HackGen_vXXXX.zip
-       + HackGen_vXXXX/
-           + HackGen-Bold.ttf
-           + HackGen-Regular.ttf
-           +    ;
+/usr/local/share/fonts/truetyper/HackGen/
+    + HackGen_vXXXX.zip
+    + HackGen_vXXXX/
+    + HackGen-Bold.ttf
+    + HackGen-Regular.ttf
+    +    ;
 ```
 
 # express : とにかくインストールする
@@ -76,13 +76,12 @@ wsl $ sudo apt update
 wsl $ sudo apt install curl unzip
 wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 wsl $ unzip HackGen_v2.9.0.zip
-wsl $ ls
-HackGen_v2.9.0
-  ;
 wsl $ ls HackGen_v2.9.0
 HackGen-Bold.ttf
 HackGen-Regular.ttf
   ;
+wsl $ sudo mkdir /usr/local/share/fonts/truetype/HackGen
+wsl $ sudo cp HackGen_v2.9.0/* /usr/local/share/fonts/truetype/HackGen/
   ;
 wsl $ cd ..
 ```
@@ -470,8 +469,20 @@ File ~/jupyterlab/venv/lib/python3.11/site-packages/PIL/ImageFont.py:797, in tru
     799     if not is_path(font):
 ```
 
-jupyterlabのソースコードファイルより上のディレクトリに遡って探索できないようだ？？
-そこで、jupyterlabのソースコードを置くディレクトリ以下に日本語フォントを置くことで解決できる。
+jupyterlab上でフォントの一覧を取得してみると・・
+
+```
+import matplotlib.font_manager as fm
+fm.findSystemFonts()
+['DejaVuSansMono-Bold.ttf', 'DejaVuSansMono.ttf', 'DejaVuSans.ttf', 'DejaVuSans-Bold.ttf', 'DejaVuSerif.ttf', 'DejaVuSerif-Bold.ttf']
+```
+
+DejaVu... というフォントは `/usr/local/share/fonts/truetype/dejavu/` に入っている。
+
+このパス以外のフォントは、jupyterlabのソースコードファイルより上のディレクトリに遡って探索できないようだ？？
+
+ということはソースコードと同じフォルダに配置するか、/usr/local/share/fonts/truetype/...に配置すると良さそう。
+
 たとえば ` 白源 (はくげん) フォント ( https://github.com/yuru7/HackGen/ ) ` を用いて、以下のように配置する。
 
 ```
@@ -482,6 +493,15 @@ jupyterlab/
   + font/
      + HackGen_vXXXX.zip
      + HackGen_vXXXX/
+         + HackGen-Bold.ttf
+         + HackGen-Regular.ttf
+         +    ;
+```
+
+または、
+```
+/usr/local/share/fonts/truetype/
+     + HackGen/
          + HackGen-Bold.ttf
          + HackGen-Regular.ttf
          +    ;
@@ -511,6 +531,9 @@ wsl $ ls HackGen_v2.9.0
 HackGen-Bold.ttf
 HackGen-Regular.ttf
   ;
+# /usr/local/share/fonts/truetype/HackGen/を作り、そこにコピーする
+wsl $ sudo mkdir /usr/local/share/fonts/truetype/HackGen
+wsl $ sudo cp HackGen_v2.9.0/* /usr/local/share/fonts/truetype/HackGen/
   ;
 # fontディレクトリの上（jupyterlabディレクトリ）に戻る
 wsl $ cd ..
@@ -532,13 +555,20 @@ wsl $ source venv/bin/activete
 wsl上、またはwindows上で、上記の操作をしてフォントを入れてjupyterlabを起動したら、jupyterlab上で次のように書くと、動く。
 
 ```
+# フォント一覧
+import matplotlib.font_manager as fm
+fm.findSystemFonts()
+
+# ワードクラウド
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 %matplotlib inline
-font_path = "font/HackGen_v2.9.0/HackGen-Regular.ttf"
+font_path = "font/HackGen_v2.9.0/HackGen-Regular.ttf" # または font_path = "HackGen-Regular.ttf"
 wc = WordCloud(font_path=font_path)
 wc.generate("あ い う え お あ あ あ い え")
 plt.imshow(wc)
+
+# 作ったワードクラウドをファイルに保存
 wc.to_file("wordcloud.png")
 ```
 
