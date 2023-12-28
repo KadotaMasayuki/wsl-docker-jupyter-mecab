@@ -1,14 +1,217 @@
 # dockerがどうしてもインストールできない場合は、wslをコンテナ扱いして運用してみる。
 
+*wsl-jupyter (no docker)*
 
-# wsl-jupyter (no docker)
+Windows11 > WSL2 > Debian > venv > Jupyterlab という構成でjupyterlab環境を作成。
 
-Windows11 > WSL2 > Debian > Jupyterlab という構成でjupyterlab環境を作成。 Windows上のブラウザから http//localhost:8888/ へアクセスするとwsl->jupyterlab:8888へ接続しJupyterlabを利用できる。 python3.11とmecabとwordcloudを使えるようにしてある。
+Windows上のブラウザから http//localhost:8888/ へアクセスするとwsl->jupyterlab:8888へ接続しJupyterlabを利用できる。
+
+python3.11とvenvの環境で、mecabとwordcloudを使えるようにしてある。
+
+## コマンドラインの表記
+
+- `PS > ` は、Windows上のPowerShellのコマンドラインを示す
+- `wsl $ ` は、wsl上のコマンドラインを示す
+- `(venv) wsl $ ` は、venv環境でのwsl上のコマンドラインを示す
+
+## ディレクトリ構成
+
+wsl中に以下のような構成を想定。
+
+```
+~/
+  jupyterlab/
+    + ソースコード１
+    + ソースコード２
+        ;
+    + font/
+       + HackGen_vXXXX.zip
+       + HackGen_vXXXX/
+           + HackGen-Bold.ttf
+           + HackGen-Regular.ttf
+           +    ;
+```
+
+# express : とにかくインストールする
+
+## wsl (debian) をインストール
+
+### インストールできるディストリビューション一覧を取得
+
+```
+PS > wsl --list --online
+  ;
+NAME                                   FRIENDLY NAME
+Debian                                 Debian GNU/Linux
+  ;
+```
+
+### Debianをインストール
+
+```
+PS > wsl --install Ddebian
+  ;
+Enter new UNIX username: xxxxx
+New password:
+Retype new password:
+passwd: password updated successfully
+Installation successful!
+
+wsl $
+```
+
+## proxy環境下であればproxy環境変数を設定
+
+https://github.com/KadotaMasayuki/wsl-docker?tab=readme-ov-file#wsl%E4%B8%8A%E3%81%AElinux%E3%81%A7%E3%81%AE%E4%BD%9C%E6%A5%ADproxy%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%99%E3%82%8Bproxy%E7%92%B0%E5%A2%83%E4%B8%8B%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%84%E5%A0%B4%E5%90%88%E3%81%AF%E4%B8%8D%E8%A6%81
 
 
-# wslにLinuxディストリビューションをインストール
+## 日本語フォントをインストール
+
+```
+wsl $ cd ~/
+wsl $ mkdir font
+wsl $ cd font
+wsl $ sudo apt update
+  ;
+wsl $ sudo apt install curl unzip
+wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+wsl $ unzip HackGen_v2.9.0.zip
+wsl $ ls
+HackGen_v2.9.0
+  ;
+wsl $ ls HackGen_v2.9.0
+HackGen-Bold.ttf
+HackGen-Regular.ttf
+  ;
+  ;
+wsl $ cd ..
+```
+
+## mecabをインストール
+
+```
+wsl $ sudo apt install mecab libmecab-dev mecab-ipadic-utf8
+```
+
+## python3をインストール
+
+pythonが入っていないことを確認する。
+
+```
+wsl $ python -V
+-bash: python: command not found
+wsl $ python3 -V
+-bash: python3: command not found
+```
+
+python3をインストールする。
+
+```
+wsl $ sudo apt install python3-pip
+  ;
+```
+
+## python3用のvenvをインストール
+
+インストールしたpython3のバージョンを確認する
+
+```
+wsl $ python3 -V
+Python 3.11.2
+```
+
+python3のバージョンに合わせたvenvをインストールする
+
+```
+wsl $ sudo apt install python3.11-venv
+```
+
+## jupyterlabでの作業環境を作る
+
+### jupyterlab用のディレクトリを作りvenvする
+
+```
+wsl $ cd ~/
+wsl $ mkdir jupyterlab
+wsl $ cd jupyterlab
+wsl $ python3 -m venv venv
+wsl $ source venv/bin/activate
+(venv) wsl $
+```
+
+### jupyterlab用のpythonパッケージをインストールする
+
+`jupyterlab`, `pandas`, `mecab-python3`をインストールする。
+
+```
+(venv) wsl $ pip3 install jupyterlab pandas mecab-python3 wordcloud
+```
+
+もし、次のような警告が出た場合はproxyを指定してやってみる
+
+```
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:992)'))': /simple/jupyterlab/
+```
+
+proxyをコマンド中で指定する場合は以下の通り。
+
+```
+(venv) wsl $ pip3 --proxy=aaa.bbb.ccc.ddd:eeee install jupyterlab pandas mecab-python3 wordcloud
+```
+
+## mecabコマンドとmecab-pythonとのファイルパスの不整合を解消
+
+```
+(venv) wsl $ ln -s /etc/mecabrc /usr/local/etc/mecabrc
+```
+
+## 使ってみる
+
+`jupyterlab`を起動する。
+
+```
+(venv) wsl $ jupyter lab &
+  ;
+    To access the server, open this file in a browser:
+        file:///home/xxxx/.local/share/jupyter/runtime/jpserver-353-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/lab?token=oiuhrj30897gq9876erasd7ag6a93
+        http://127.0.0.1:8888/lab?token=oiuhrj30897gq9876erasd7ag6a93
+[I 2023-11-26 12:29:30.057 ServerApp] Skipped non-installed server(s): bash-language-server, dockerfile-language-server-nodejs, javascript-typescript-langserver, jedi-language-server, julia-language-server, pyright, python-language-server, python-lsp-server, r-languageserver, sql-language-server, texlab, typescript-language-server, unified-language-server, vscode-css-languageserver-bin, vscode-html-languageserver-bin, vscode-json-languageserver-bin, yaml-language-server
+
+(venv) wsl $
+```
+
+この画面の末尾付近にある
+
+```
+    Or copy and paste one of these URLs:
+        http://localhost:8888/lab?token=oiuhrj30897gq9876erasd7ag6a93
+```
+
+に書いてあるアドレスをWindowsのブラウザに指定すると、jupyterlabにアクセスできる。
+
+## word cloudで日本語画像を作る
+
+jupyterlabのノートに以下を記入して実行すると、それなりのワードクラウドが表示される。
+
+```
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+%matplotlib inline
+wc = WordCloud()
+wc.generate("あ い う あ あ え あ お あ あ あ い え あ か あ あ く あ そ あ")
+plt.imshow(wc)
+wc.to_file("wordcloud.png")
+```
+
+# 解説付き
+
+## wslにLinuxディストリビューションをインストール
 
 `PowerShell`から、wslにディストリビューションを入れる。
+
+### インストールできるディストリビューション一覧を取得
 
 ```
 PS > wsl --list --online
@@ -31,7 +234,9 @@ SUSE-Linux-Enterprise-15-SP5           SUSE Linux Enterprise 15 SP5
 openSUSE-Tumbleweed                    openSUSE Tumbleweed
 ```
 
-メイン環境と同じものはインストールできないと思うので、そうじゃないものを入れる。
+### Debianを入れる
+
+すでにUbuntu環境があるので、それとは違うものを入れる。ここではDebianにした。
 
 ```
 PS > wsl --install Ddebian
@@ -52,13 +257,15 @@ wsl $
 
 今回は新たな環境として`Debian`をインストールしたので、この中で以下のようにインストールを進める。
 
-mecabコマンドをインストールする。
+## mecabコマンドをインストール
 
 ```
 wsl $ sudo apt update
   ;
 wsl $ sudo apt install mecab libmecab-dev mecab-ipadic-utf8
 ```
+
+## python3をインストール
 
 pythonが入っていないことを確認。
 
@@ -69,19 +276,14 @@ wsl $ python3 -V
 -bash: python3: command not found
 ```
 
-pythonをインストールする。
+python3をインストールする。
 
 ```
 wsl $ sudo apt install python3-pip
   ;
 ```
 
-インストールしたpython3のバージョンを確認する
-
-```
-wsl $ python3 -V
-Python 3.11.2
-```
+## jupyterlab環境をつくる
 
 wsl上に、今回のjupyterlab専用の仮想環境を~/jupyterlabディレクトリ内に専用環境を構築したいため、ディレクトリを用意する。
 
@@ -89,6 +291,8 @@ wsl上に、今回のjupyterlab専用の仮想環境を~/jupyterlabディレク�
 wsl $ mkdir jupyterlab
 wsl $ cd jupyterlab
 ```
+
+## jupyterlab環境をvenvで作る
 
 このディレクトリで`venv`すると・・
 
@@ -106,12 +310,25 @@ package, recreate your virtual environment.
 Failing command: /home/xxxxx/jupyterlab/venv/bin/python3
 ```
 
-とエラーが出る。venvを使うならpython3.11-venvをインストールせよ、というメッセージに従って、インストールする。
+とエラーが出る。venvを使うならpython3.11-venvをインストールせよ、というメッセージ。
+
+## python3用のvenvをインストール
+
+念のため、インストールしたpython3のバージョンを確認する
+
+```
+wsl $ python3 -V
+Python 3.11.2
+```
+
+先ほどのメッセージに従って、インストールする。
 venvは`python`のバージョンと合わせる。今回、3.11なので、`python3.11-venv`を指定する。
 
 ```
 wsl $ sudo apt install python3.11-venv
 ```
+
+## あらためて、jupyterlabでの作業環境を作る
 
 インストールしたvenvで本件専用環境を準備する。
 先ほど試した通り、本件環境は`~/jupyterlab`というディレクトリ内に作ることにする。
@@ -125,29 +342,40 @@ wsl $ source venv/bin/activate
 ```
 
 専用環境を起動できると、コマンドラインの先頭に仮想環境の名前が表示される。ここでは`(venv)`。
+
+### jupyterlab用のpythonパッケージをインストールする
+
 専用環境になっていることを確認し、`jupyterlab`, `pandas`, `mecab-python3`を専用環境用にインストールする。
 
 ```
 (venv) wsl $ pip3 install jupyterlab pandas mecab-python3 wordcloud
 ```
 
-もし、次のような警告が出た場合はproxyを指定してやってみる
+もし、次のような警告が出た場合はproxyを指定してやってみる。
 
 ```
 WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:992)'))': /simple/jupyterlab/
 ```
 
-proxyを指定してもういちど。アドレスとポートは自分の環境に合わせて。
+wslにproxy環境変数を設定する場合は以下を参考に。
+
+https://github.com/KadotaMasayuki/wsl-docker?tab=readme-ov-file#wsl%E4%B8%8A%E3%81%AElinux%E3%81%A7%E3%81%AE%E4%BD%9C%E6%A5%ADproxy%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%99%E3%82%8Bproxy%E7%92%B0%E5%A2%83%E4%B8%8B%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%84%E5%A0%B4%E5%90%88%E3%81%AF%E4%B8%8D%E8%A6%81
+
+proxyをコマンド中で指定する場合は以下の通り。
 
 ```
 (venv) wsl $ pip3 --proxy=aaa.bbb.ccc.ddd:eeee install jupyterlab pandas mecab-python3 wordcloud
 ```
+
+## mecabコマンドとmecab-pythonとのファイルパスの不整合を解消
 
 dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのファイルパスの不整合があるので、解消しておく。
 
 ```
 (venv) wsl $ ln -s /etc/mecabrc /usr/local/etc/mecabrc
 ```
+
+## 使ってみる
 
 これでpythonでmecabが利用できるようになった。
 
@@ -203,8 +431,7 @@ dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのフ
 
 に書いてあるアドレスをWindowsのブラウザに指定すると、jupyterlabにアクセスできる。
 
-
-## word cloudに日本語を表示する場合
+## word cloudに日本語を表示する
 
 日本語をワードクラウドにすると、豆腐（□）が表示されて話にならない。
 たとえば以下のように書くと、表示される画像は□だらけになる。
