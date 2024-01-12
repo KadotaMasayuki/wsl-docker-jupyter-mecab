@@ -49,7 +49,7 @@ Debian                                 Debian GNU/Linux
 ### Debianをインストール
 
 ```
-PS > wsl --install Ddebian
+PS > wsl --install -d Debian
   ;
 Enter new UNIX username: xxxxx
 New password:
@@ -238,7 +238,7 @@ openSUSE-Tumbleweed                    openSUSE Tumbleweed
 すでにUbuntu環境があるので、それとは違うものを入れる。ここではDebianにした。
 
 ```
-PS > wsl --install Ddebian
+PS > wsl --install -d Debian
 インストール中: Debian GNU/Linux
 Debian GNU/Linux がインストールされました。
 Debian GNU/Linux を起動しています...
