@@ -74,7 +74,7 @@ wsl $ cd font
 wsl $ sudo apt update
   ;
 wsl $ sudo apt install curl unzip
-wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+wsl $ curl -k -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 wsl $ unzip HackGen_v2.9.0.zip
 wsl $ ls HackGen_v2.9.0
 HackGen-Bold.ttf
@@ -203,6 +203,10 @@ wc.generate("あ い う あ あ え あ お あ あ あ い え あ か あ あ
 plt.imshow(wc)
 wc.to_file("wordcloud.png")
 ```
+
+
+***
+
 
 # 解説付き
 
@@ -360,7 +364,7 @@ wslにproxy環境変数を設定する場合は以下を参考に。
 
 https://github.com/KadotaMasayuki/wsl-docker?tab=readme-ov-file#wsl%E4%B8%8A%E3%81%AElinux%E3%81%A7%E3%81%AE%E4%BD%9C%E6%A5%ADproxy%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%99%E3%82%8Bproxy%E7%92%B0%E5%A2%83%E4%B8%8B%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%84%E5%A0%B4%E5%90%88%E3%81%AF%E4%B8%8D%E8%A6%81
 
-proxyをコマンド中で指定する場合は以下の通り。
+pip3コマンドにproxyを直接指定する場合は以下の通りだが、環境変数で指定したほうが楽。
 
 ```
 (venv) wsl $ pip3 --proxy=aaa.bbb.ccc.ddd:eeee install jupyterlab pandas mecab-python3 wordcloud
@@ -371,7 +375,7 @@ proxyをコマンド中で指定する場合は以下の通り。
 dockerでの手順に書いた通り、mecabコマンドとmecab-pythonとのファイルパスの不整合があるので、解消しておく。
 
 ```
-(venv) wsl $ ln -s /etc/mecabrc /usr/local/etc/mecabrc
+(venv) wsl $ sudo ln -s /etc/mecabrc /usr/local/etc/mecabrc
 ```
 
 ## 使ってみる
@@ -518,7 +522,7 @@ wsl $ cd font
 wsl $ sudo apt install curl
 # curlでhttpsアクセスするときSSLが邪魔することがあるので -k オプションで無視する（良くない）
 # リンクの先であちこちにたらい回しされることがあるので -L オプションで最後まで辿って取得する
-wsl $ curl -k -L https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+wsl $ curl -k -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 # zip ファイルを解凍する必要があるので解凍コマンドをインストールする
 wsl $ sudo apt install unzip
 # 解凍する
