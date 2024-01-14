@@ -20,10 +20,60 @@ Docker version 24.0.7, build afdd53b
 
 Docker内のpythonバージョン 3.11
 
+** proxy環境下で構築するときは、[proxy環境のwindowsで、wsl2にdockerを入れる！](https://github.com/KadotaMasayuki/wsl-docker/blob/main/README.md)を参照。 **
+
+ディレクトリ構成
+
+```
+~/
+   jupyter/
+      docker/
+         Dockerfile
+         create.bash
+         start.bash
+      src/
+         作ったノートブック等
+          ;
+```
+
+
+# ディレクトリを準備する
+
+:::note info
+wslやlinuxをリセットするなどで、作ったノートブックが消えることを避けるため、データ類はwindows上で管理する
+:::
+
+windows上の任意のディレクトリに、`docker`ディレクトリと、`src`ディレクトリを作る。
+`docker`ディレクトリ内に、`Dockerfile`と`create.bash`と`start.bash`を格納しておく。
+
+たとえば、ユーザー`a user`の`マイドキュメント`の`wsl_test`の`jupyter_test`ディレクトリを以下のように準備する。
+
+```
+windows/c/Users/a user/My Documents/wsl_test/jupyter_test/
+    docker/
+        Dockerfile
+        create.bash
+        start.bash
+    src/
+```
+
+つづいて、wsl上にjupyterディレクトリを作る。
+wslからは、windowsのディレクトリは、`/mnt/C/Users/a user/My Documents/wsl_test/jupyter_test`というパスで辿れるので、このパスをwslのホームディレクトリにシンボリックリンクする。
+
+```
+wsl $ cd ~/
+wsl $ ln -s /mnt/C/Users/a user/My Documents/wsl_test/jupyter_test jupyter
+wsl $ ls -lX
+lrwxrwxrwx 1 yourname   jupyter -> '/mnt/C/Users/a user/My Documents/wsl_test/jupyter_test'
+wsl $ ls jupyter
+docker  src
+wsl $
+```
+
 
 # Dockerイメージ生成
 
-Dockerfileと同じディレクトリで以下を実行する。
+wsl上で、Dockerfileと同じディレクトリで以下を実行する。
 
 ```
 wsl $ ./createcontainer.bash
@@ -266,6 +316,7 @@ fm.findSystemFonts()
 ```
 
 このリストの中から、フルパスを指定して`/usr/local/share/fonts/HackGen/HackGen-Regular.ttf`を指定するなどしてjupyterlabで使える。
+ディレクトリがなく、フォント名だけが表示されることがあるので、そのときは表示されたままのフォント名を指定すれば良い。
 
 
 ## jupyterlabを起動する
@@ -289,32 +340,38 @@ wsl $ ./start.bash
 または
 
 ```
-wsl $ docker run --name jupyter-container --rm --detach --publish 8889:8888 --mount type=bind,src=$PWD,dst=/home/jupyter/src jupyter
+wsl $ docker run --name jupyter-container --rm --detach --publish 8889:8888 --mount type=bind,src=${HOME}/jupyter/src,dst=/home/jupyter/src jupyter
 ```
 
 でコンテナ生成。
 
---name docker ps で見えるコンテナ名を`jupyter-container`にする
+** --name docker ** ps で見えるコンテナ名を`jupyter-container`にする
 
---rm コンテナ終了したら自動で削除する。
+** --rm ** コンテナ終了したら自動で削除する。
 
---detach バックグラウンドで起動。
+** --detach ** バックグラウンドで起動。
 
---publish コンテナ内のport8888と、コンテナ外(wsl)のport8889を接続する。
+** --publish ** コンテナ外(wsl)のport8889と、コンテナ内のport8888とを接続する。
 
---mount コンテナ内の`/home/jupyter`ディレクトリに、コンテナ外の現在のディレクトリ($PWD)を`src`と言う名前でマウントする。
+** --mount ** コンテナ外(wsl)のホームディレクトリ中のjupyter/srcディレクトリ`${HOME}/jupyter/src`を、コンテナ内の`/home/jupyter`ディレクトリに`src`と言う名前でマウントする。
 
-jupyter イメージ`jupyter`からコンテナを作る
+** jupyter ** イメージ`jupyter`からコンテナを作る
 
 
 # Windowsからdocker内のJupyterlabへ接続
 
 Windowsのブラウザから、( http://localhost:8889/ )へ接続すると、jupyterlabの画面になる。
-jupyterlab上の`/home/jupyter/src`ディレクトリと`wsl`上のコンテナ生成したディレクトリとで、ファイルのやり取りができる。
 
 ** wslのport8889と、windowsのportXXXXを対応付けなきゃ！　と思っていたが、不要のようだ。 **
 
-`wsl`内のファイルは、`windows`から`\\wsl$`でアクセスできる。
+
+# 保存したファイルの所在
+
+jupyterlab上の`/home/jupyter/src`ディレクトリにノートブックを保存すると、`wsl`上の`~/jupyter/src`ディレクトリ = windows上のディレクトリにノートブックが出来上がる。
+
+windowsから`wsl`内のファイルを見たい場合は、windowsから`\\wsl$`でアクセスできる。
+
+wslからwindowsのファイルを見たい場合は、`/mnt/C/.....`でアクセスできる。
 
 
 # Jupyterlabで日本語フォントを使う
