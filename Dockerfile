@@ -22,12 +22,12 @@ RUN pip3 install wordcloud
 RUN ln -s /etc/mecabrc /usr/local/etc/mecabrc
 
 # add japanese font
-RUN mkdir /home/jupyter
-RUN cd /home/jupyter
+RUN cd /tmp
 RUN apt install curl unzip
-RUN curl -k -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+RUN curl -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 RUN unzip HackGen_v2.9.0.zip
 RUN mv HackGen_v2.9.0 /usr/local/share/fonts/HackGen
+RUN rm HackGen_v2.9.0.zip
 
 # run jupyter-lab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--LabApp.token=''", "--port=8888"]
