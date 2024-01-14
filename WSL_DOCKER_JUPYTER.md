@@ -31,7 +31,7 @@ Docker内のpythonバージョン 3.11
          Dockerfile
          create.bash
          start.bash
-      src/
+      notebook/
          作ったノートブック等
           ;
 ```
@@ -43,7 +43,7 @@ Docker内のpythonバージョン 3.11
 wslやlinuxをリセットするなどで、作ったノートブックが消えることを避けるため、データ類はwindows上で管理する
 :::
 
-windows上の任意のディレクトリに、`docker`ディレクトリと、`src`ディレクトリを作る。
+windows上の任意のディレクトリに、`docker`ディレクトリと、`notebook`ディレクトリを作る。
 `docker`ディレクトリ内に、`Dockerfile`と`create.bash`と`start.bash`を格納しておく。
 
 たとえば、ユーザー`a user`の`マイドキュメント`の`wsl_test`の`jupyter_test`ディレクトリを以下のように準備する。
@@ -54,7 +54,7 @@ windows/c/Users/a user/My Documents/wsl_test/jupyter_test/
         Dockerfile
         create.bash
         start.bash
-    src/
+    notebook/
 ```
 
 つづいて、wsl上にjupyterディレクトリを作る。
@@ -66,7 +66,7 @@ wsl $ ln -s /mnt/C/Users/a user/My Documents/wsl_test/jupyter_test jupyter
 wsl $ ls -lX
 lrwxrwxrwx 1 yourname   jupyter -> '/mnt/C/Users/a user/My Documents/wsl_test/jupyter_test'
 wsl $ ls jupyter
-docker  src
+docker/  notebook/
 wsl $
 ```
 
@@ -76,7 +76,7 @@ wsl $
 wsl上で、Dockerfileと同じディレクトリで以下を実行する。
 
 ```
-wsl $ ./createcontainer.bash
+wsl $ ./create.bash
 ```
 
 または
@@ -279,16 +279,18 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 ```
 # add japanese font
-RUN mkdir /home/jupyter
-RUN cd /home/jupyter
+RUN cd /tmp
 RUN apt install curl unzip
-RUN curl -k -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
+RUN curl -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 RUN unzip HackGen_v2.9.0.zip
 RUN mv HackGen_v2.9.0 /usr/local/share/fonts/HackGen
+RUN rm HackGen_v2.9.0.zip
 ```
 
-こうすることで、jupyter lab上で
+curlでのダウンロードが失敗する場合、proxy環境下であれば、まずは、[proxy環境のwindowsで、wsl2にdockerを入れる！](https://github.com/KadotaMasayuki/wsl-docker/blob/main/README.md)をやってみる。それでもダメ、またはproxy環境ではないのに失敗する、という場合は、curlコマンドに`-k`オプションを付けてみると認証関係のエラーを回避できるかもしれない。
 
+
+フォントを`/user/local/share/fonts/`ディレクトリに入れることで、jupyter lab上で
 
 ```
 import matplotlib.font_manager as fm
@@ -299,23 +301,23 @@ fm.findSystemFonts()
 
 
 ```
+ '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35Console-Bold.ttf',
- '/usr/local/share/fonts/HackGen/HackGenConsole-Regular.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35-Bold.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35Console-Regular.ttf',
- '/usr/local/share/fonts/HackGen/HackGen-Bold.ttf',
+ '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
  '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf',
- '/usr/local/share/fonts/HackGen/HackGen-Regular.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen-Regular.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGenConsole-Regular.ttf',
  '/usr/local/share/fonts/HackGen/HackGenConsole-Bold.ttf',
  '/usr/local/share/fonts/HackGen/HackGen35-Regular.ttf',
- '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
- '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
+ '/usr/local/share/fonts/HackGen/HackGen35-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen35Console-Regular.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen35Console-Bold.ttf',
 ```
 
-このリストの中から、フルパスを指定して`/usr/local/share/fonts/HackGen/HackGen-Regular.ttf`を指定するなどしてjupyterlabで使える。
+このリストの中から、フルパスで`/usr/local/share/fonts/HackGen/HackGen-Regular.ttf`を指定するなどして、jupyterlabで使える。
 ディレクトリがなく、フォント名だけが表示されることがあるので、そのときは表示されたままのフォント名を指定すれば良い。
 
 
@@ -340,7 +342,7 @@ wsl $ ./start.bash
 または
 
 ```
-wsl $ docker run --name jupyter-container --rm --detach --publish 8889:8888 --mount type=bind,src=${HOME}/jupyter/src,dst=/home/jupyter/src jupyter
+wsl $ docker run --name jupyter-container --rm --detach --publish 8889:8888 --mount type=bind,src=${HOME}/jupyter/notebook,dst=/jupyter ---workdir=/jupyter jupyter
 ```
 
 でコンテナ生成。
@@ -353,9 +355,11 @@ wsl $ docker run --name jupyter-container --rm --detach --publish 8889:8888 --mo
 
 ** --publish ** コンテナ外(wsl)のport8889と、コンテナ内のport8888とを接続する。
 
-** --mount ** コンテナ外(wsl)のホームディレクトリ中のjupyter/srcディレクトリ`${HOME}/jupyter/src`を、コンテナ内の`/home/jupyter`ディレクトリに`src`と言う名前でマウントする。
+** --mount ** コンテナ外(wsl)のホームディレクトリ中のjupyter/srcディレクトリ`${HOME}/jupyter/src`を、コンテナ内の`/jupyter`ディレクトリとしてマウントする。
 
-** jupyter ** イメージ`jupyter`からコンテナを作る
+** --workdir ** コンテナ内の`/jupyter`ディレクトリで作業する
+
+** jupyter ** イメージ`jupyter`からコンテナを起動する
 
 
 # Windowsからdocker内のJupyterlabへ接続
@@ -367,39 +371,37 @@ Windowsのブラウザから、( http://localhost:8889/ )へ接続すると、ju
 
 # 保存したファイルの所在
 
-jupyterlab上の`/home/jupyter/src`ディレクトリにノートブックを保存すると、`wsl`上の`~/jupyter/src`ディレクトリ = windows上のディレクトリにノートブックが出来上がる。
+jupyterlab上の`/jupyter`ディレクトリにノートブックを保存すると、`wsl`上の`~/jupyter/notebook`ディレクトリ( = windows上のディレクトリ) にノートブックが出来上がる。
 
+:::note info
 windowsから`wsl`内のファイルを見たい場合は、windowsから`\\wsl$`でアクセスできる。
 
 wslからwindowsのファイルを見たい場合は、`/mnt/C/.....`でアクセスできる。
+:::
 
 
 # Jupyterlabで日本語フォントを使う
 
-日本語フォントの項でも書いたとおり、JupyterlabでPythonのソースコードを作成し、次のように入力する。
+日本語フォントを導入する項でも書いたとおり、JupyterlabでPythonのソースコードを作成し、次のように入力すると、使用できるフォントのリストが得られる。
 
 ```
 import matplotlib.font_manager as fm
 fm.findSystemFonts()
-```
 
-とすると、以下のようにフォント一覧が得られる。
-
-```
+ '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35Console-Bold.ttf',
- '/usr/local/share/fonts/HackGen/HackGenConsole-Regular.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35-Bold.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',
- '/usr/local/share/fonts/HackGen/HackGen35Console-Regular.ttf',
- '/usr/local/share/fonts/HackGen/HackGen-Bold.ttf',
+ '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
  '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf',
- '/usr/local/share/fonts/HackGen/HackGen-Regular.ttf',
  '/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen-Regular.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGenConsole-Regular.ttf',
  '/usr/local/share/fonts/HackGen/HackGenConsole-Bold.ttf',
  '/usr/local/share/fonts/HackGen/HackGen35-Regular.ttf',
- '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
- '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
+ '/usr/local/share/fonts/HackGen/HackGen35-Bold.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen35Console-Regular.ttf',
+ '/usr/local/share/fonts/HackGen/HackGen35Console-Bold.ttf',
 ```
 
 この中で、`HackGen/HackGen****.ttf`というものが日本語フォント。
