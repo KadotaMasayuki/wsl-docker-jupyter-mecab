@@ -22,7 +22,6 @@ RUN pip3 install wordcloud
 RUN ln -s /etc/mecabrc /usr/local/etc/mecabrc
 
 # add japanese font
-RUN cd /tmp
 RUN apt install curl unzip
 RUN curl -L -o HackGen_v2.9.0.zip https://github.com/yuru7/HackGen/releases/download/v2.9.0/HackGen_v2.9.0.zip
 RUN unzip HackGen_v2.9.0.zip
